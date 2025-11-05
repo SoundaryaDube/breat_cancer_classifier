@@ -4,7 +4,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/component/*"]
+      "@/*": ["./src/*"]                   /* <-- THIS WAS THE FIX */
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
