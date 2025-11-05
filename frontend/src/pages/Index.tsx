@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { toast } from "@/component/ui/use-toast"; // Make sure this import is correct
-import { Button } from "@/component/ui/button";   // Example: Import your button
-import { Card, CardContent, CardHeader, CardTitle } from "@/component/ui/card"; // Example: Import other components
+import { toast } from "@/component/ui/use-toast";
+import { Button } from "@/component/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/component/ui/card";
+
+// Import your actual UI component for the 30 inputs
+import FeatureInputs from "@/component/FeatureInputs";
 
 // Define the structure for your prediction state
 interface Prediction {
@@ -12,20 +15,25 @@ interface Prediction {
   };
 }
 
+// Define the type for the feature data
+type FeatureData = number[];
+
 const Index = () => {
-  // Define your states INSIDE the component
-  const [fileData, setFileData] = useState<number[] | null>(null); // State to hold the 30 features
+  // State to hold the 30 features. It will be set by the FeatureInputs component.
+  const [fileData, setFileData] = useState<FeatureData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
 
-  //
-  // Your handleAnalyze function goes INSIDE the component
-  //
+  /**
+   * This is your handleAnalyze function.
+   * It now reads the 'fileData' state, which is populated by your FeatureInputs component.
+   */
   const handleAnalyze = async () => {
-    if (!fileData) {
+    // Check if the fileData state has been set by the FeatureInputs component
+    if (!fileData || fileData.length !== 30) {
       toast({
         title: "Error",
-        description: "Please upload a valid file first.",
+        description: "Please ensure all 30 feature inputs are filled correctly.",
         variant: "destructive"
       });
       return;
@@ -55,7 +63,7 @@ const Index = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        // Send the file data in the format the API expects
+        // Send the file data (from state) in the format the API expects
         body: JSON.stringify({
           "features": fileData
         }),
@@ -98,37 +106,34 @@ const Index = () => {
     }
   };
 
-  //
-  // This is your page's UI.
-  // You must return JSX from your component.
-  //
+  /**
+   * This is the JSX for your page.
+   * It renders your FeatureInputs component and passes it the 'setFileData' function.
+   */
   return (
     <div className="container mx-auto p-4">
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>Breast Cancer Classifier</CardTitle>
+          <CardDescription>
+            Enter the 30 tumor features to predict benign or malignant.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">
-            Upload a file or enter the 30 tumor features to predict
-            benign or malignant.
-          </p>
           
-          {/* You need to add your UI for uploading or entering 'fileData' here.
-            For now, I'll add a placeholder button to set example data.
+          {/* This renders your component for the 30 inputs.
+            We pass the 'setFileData' function to it so it can update this page's state.
+            (Note: I am assuming the prop is named 'onDataChange'. If your
+            FeatureInputs component uses a different prop name, like 'setFeatures',
+            you will need to change 'onDataChange' to that name.)
           */}
-          <Button 
-            onClick={() => setFileData([17.99, 10.38, 122.8, 1001.0, 0.1184, 0.2776, 0.3001, 0.1471, 0.2419, 0.07871, 1.095, 0.9053, 8.589, 153.4, 0.006399, 0.04904, 0.05373, 0.01587, 0.03003, 0.006193, 25.38, 17.33, 184.6, 2019.0, 0.1622, 0.6656, 0.7119, 0.2654, 0.4601, 0.1189])}
-            variant="outline"
-            className="mr-2"
-          >
-            Load Example Data
-          </Button>
+          <FeatureInputs onDataChange={setFileData} />
 
-          <Button onClick={handleAnalyze} disabled={isAnalyzing}>
+          <Button onClick={handleAnalyze} disabled={isAnalyzing} className="w-full mt-4">
             {isAnalyzing ? "Analyzing..." : "Analyze"}
           </Button>
 
+          {/* This section displays the prediction result */}
           {prediction && (
             <div className="mt-6 p-4 border rounded-md">
               <h3 className="text-lg font-semibold">Prediction Result</h3>
@@ -146,6 +151,9 @@ const Index = () => {
     </div>
   );
 };
+
+// This is the export that fixes the build
+export default Index;
 
 //
 // THIS IS THE MISSING LINE THAT FIXES THE BUILD
